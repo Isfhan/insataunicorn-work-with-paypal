@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Paypal</title>
+</head>
+<body>
+
+<div id="paypal-button-container"></div>
+
+<script src="https://www.paypalobjects.com/api/checkout.js"></script>
+<script>
+// Render the PayPal button
+paypal.Button.render({
+// Set your environment
+env: 'sandbox', // sandbox | production
+
+// Specify the style of the button
+style: {
+  layout: 'vertical',  // horizontal | vertical
+  size:   'responsive',    // medium | large | responsive
+  shape:  'rect',      // pill | rect
+  color:  'gold'       // gold | blue | silver | white | black
+},
+
+// Specify allowed and disallowed funding sources
+//
+// Options:
+// - paypal.FUNDING.CARD
+// - paypal.FUNDING.CREDIT
+// - paypal.FUNDING.ELV
+funding: {
+  allowed: [
+    paypal.FUNDING.CARD,
+    paypal.FUNDING.CREDIT
+  ],
+  disallowed: []
+},
+
+// PayPal Client IDs - replace with your own
+// Create a PayPal app: https://developer.paypal.com/developer/applications/create
+client: {
+  sandbox: 'AVp9gsWBpy2bVwgj862bwoZjqUUwXCb8qs_vC91qzt29adV5av9hPR_laIv1Tw17H6Ek-xhuXrMs0ARV',
+  production: 'AcE84jZeFiERRif8f8RTB84C7u0CuXCxIRmxJ_4pz5RfY3P7hGLiFysjQIRnWr2OvRbZQ8ETpiPy4mkX'
+},
+
+// Set up a payment
+payment: function(data, actions) {
+    var total_price = "";
+    var final_pkg = "";
+    var sessionPk = sessionStorage.getItem("pk");
+    var sessionPrice = sessionStorage.getItem("price");
+    if(sessionPk != null &&  sessionPrice != null)
+    {
+        total_price = sessionPrice;
+        final_pkg = sessionPk;
+
+    }
+    else
+    {
+        total_price = getUrlParameter('price');
+        final_pkg = getUrlParameter('pk');
+    }
+
+  return actions.payment.create({
+    transactions: [{
+      amount: {
+        total: total_price,
+        currency: 'USD'
+      },
+      description: `You purchase instaunicorn ${final_pkg} package  price of ${total_price} .`,
+      //invoice_number: '12345', Insert a unique invoice number
+      payment_options: {
+        allowed_payment_method: 'INSTANT_FUNDING_SOURCE'
+      },
+      item_list: {
+        items: [
+        {
+          name: `instaunicorn ${final_pkg} Package`,
+          description: 'instaunicorn Pro Package .',
+          quantity: '1',
+          price: total_price,
+          currency: 'USD'
+        }
+        ]
+      }
+    }],
+    note_to_payer: 'Contact us for any questions on your order.'
+  });
+},
+
+
+
+/*payment: function (data, actions) {
+    console.log("payment is clicked");
+  return actions.payment.create({
+    payment: {
+      transactions: [
+        {
+          amount: {
+            total: '200',
+            currency: 'USD'
+          }
+        }
+      ]
+    }
+  });
+},*/
+
+onAuthorize: function (data, actions) {
+  return actions.payment.execute()
+    .then(function () {
+      window.alert('Payment Complete!');
+    });
+}
+}, '#paypal-button-container');
+</script>
+
+</body>
+</html>

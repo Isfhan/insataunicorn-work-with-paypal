@@ -1,0 +1,252 @@
+
+
+
+<script src="https://www.paypalobjects.com/api/checkout.js"></script>
+<script>
+
+function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+ 
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+ 
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+ };
+
+// Render the PayPal button
+paypal.Button.render({
+// Set your environment
+env: 'sandbox', // sandbox | production
+
+// Specify the style of the button
+style: {
+  layout: 'vertical',  // horizontal | vertical
+  size:   'responsive',    // medium | large | responsive
+  shape:  'rect',      // pill | rect
+  color:  'gold'       // gold | blue | silver | white | black
+},
+
+// Specify allowed and disallowed funding sources
+//
+// Options:
+// - paypal.FUNDING.CARD
+// - paypal.FUNDING.CREDIT
+// - paypal.FUNDING.ELV
+funding: {
+  allowed: [
+    paypal.FUNDING.CARD,
+    paypal.FUNDING.CREDIT
+  ],
+  disallowed: []
+},
+
+// PayPal Client IDs - replace with your own
+// Create a PayPal app: https://developer.paypal.com/developer/applications/create
+client: {
+  sandbox: 'AVp9gsWBpy2bVwgj862bwoZjqUUwXCb8qs_vC91qzt29adV5av9hPR_laIv1Tw17H6Ek-xhuXrMs0ARV',
+  production: 'AcE84jZeFiERRif8f8RTB84C7u0CuXCxIRmxJ_4pz5RfY3P7hGLiFysjQIRnWr2OvRbZQ8ETpiPy4mkX'
+},
+
+// Set up a payment
+payment: function(data, actions) {
+    var total_price = "";
+    var final_pkg = "";
+    var sessionPk = sessionStorage.getItem("pk");
+    var sessionPrice = sessionStorage.getItem("price");
+    if(sessionPk != null &&  sessionPrice != null)
+    {
+        total_price = sessionPrice;
+        final_pkg = sessionPk;
+
+    }
+    else
+    {
+        total_price = getUrlParameter('price');
+        final_pkg = getUrlParameter('pk');
+    }
+
+  return actions.payment.create({
+    transactions: [{
+      amount: {
+        total: total_price,
+        currency: 'USD'
+      },
+      description: `You purchase instaunicorn ${final_pkg} package  price of ${total_price} .`,
+      //invoice_number: '12345', Insert a unique invoice number
+      payment_options: {
+        allowed_payment_method: 'INSTANT_FUNDING_SOURCE'
+      },
+      item_list: {
+        items: [
+        {
+          name: `instaunicorn ${final_pkg} Package`,
+          description: `instaunicorn ${final_pkg} Package .`,
+          quantity: '1',
+          price: total_price,
+          currency: 'USD'
+        }
+        ]
+      }
+    }],
+    note_to_payer: 'Contact us for any questions on your order.'
+  });
+},
+
+
+onAuthorize: function (data, actions) {
+  return actions.payment.execute()
+    .then(function () {
+      window.alert('Payment Complete Please Wait ..... ');
+      $('#wpcf7-f464-p139-o1 > form').submit()
+    });
+}
+}, '#paypal-button-container');
+
+
+
+
+
+
+$(document).ready(function(){
+ let price = getUrlParameter('price');
+  $(`#slt-pkg option[value=${price}]`).attr("selected", "selected");
+  sessionStorage.clear();  
+});
+
+$('#slt-pkg').on('change', function (e) {
+    let optionSelected = $("option:selected", this);
+    let idSelected = optionSelected[0].id;
+    let valueSelected = this.value; 
+    sessionStorage.setItem("pk", `${idSelected}`);
+    sessionStorage.setItem("price", `${valueSelected}`);
+    console.log(idSelected);
+    console.log(valueSelected);
+});
+
+$("#change-btn").on("click",function(){
+  $(".dis-none").css("display","block", "transition-duration","0.5s");
+  $(".img-sec-main").css("display","none", "transition-duration","0.5s");
+  $(".create-acc-form").css("display","none", "transition-duration","0.5s");
+});
+
+$("#button-continue").on("click",function(){
+  var yd_name = $("input[name=your-name]").val();
+  var yd_phone = $("input[name=your-phno]").val();
+  var yd_email = $("input[name=your-email]").val();
+  if(yd_name != "")
+  {
+       $("input[name=your-name]").removeClass("error-red");
+       $("input[name=your-name]").addClass("error-green");
+
+      if(yd_phone != "")
+      {
+        $("input[name=your-phno]").removeClass("error-red");
+        $("input[name=your-phno]").addClass("error-green");
+
+        if(yd_email != "")
+        {
+          $("input[name=your-email]").removeClass("error-red");
+          $("input[name=your-email]").addClass("error-green");
+
+          $(".paypal-sec").css("display","inline-block", "transition-duration","0.5s");
+          $(".img-sec-main").css("display","none", "transition-duration","0.5s");
+          $(".create-acc-form").css("display","none", "transition-duration","0.5s");
+          $(".payment-form").css("display","none", "transition-duration","0.5s");
+        }
+        else
+        {
+          $("input[name=your-email]").attr("placeholder", "Please Enter Your Email");
+          $("input[name=your-email]").removeClass("error-green");
+          $("input[name=your-email]").addClass("error-red");
+          //alert('Please Enter Your Email');
+        }
+      }
+      else
+      {
+        $("input[name=your-phno]").attr("placeholder", "Please Enter Your Phone no");
+        $("input[name=your-phno]").removeClass("error-green");
+        $("input[name=your-phno]").addClass("error-red");
+        //alert('Please Enter Your Phone no');
+      }
+  }
+  else
+  {
+    $("input[name=your-name]").attr("placeholder", "Please Enter Your Name");
+    $("input[name=your-name]").removeClass("error-green");
+    $("input[name=your-name]").addClass("error-red");
+    //alert('Please Enter Your Name ');
+  }
+
+
+});
+
+$("#continue-btn").on("click",function(){
+ let insta_uname = $("#insta-uname").val();
+ let req_error = "";
+ if(insta_uname != "")
+ {
+    let name = insta_uname;
+    let  url =`https://www.instagram.com/${name}/`; 
+    let req = $.get(url, function(data, status){
+             let htmldata =  data;
+             //console.log(htmldata);
+             let parser=new DOMParser();
+             let htmlDoc=parser.parseFromString(htmldata,"text/html");
+             let el = htmlDoc.getElementsByTagName("meta")[14].content;
+            // console.log(el);
+             req_error = "success";
+             if(req_error != "")
+             {
+               $("#pro_img").attr("src",el);
+               $("#insta-username").html(insta_uname);
+               
+               var sessionPk = sessionStorage.getItem("pk");
+               var sessionPrice = sessionStorage.getItem("price");
+               if(sessionPk != null &&  sessionPrice != null)
+               {
+                  $("#pk").html(`${sessionPk} :`);
+                  $("#price").html(`$${sessionPrice}`);
+                  $("#paypal-pkg-price").html(`Total Price:  $${sessionPrice}`);
+                  $("#your-pkname").val(sessionPk);
+                  $("#your-pkprice").val(sessionPrice);
+
+               }
+               else
+               {
+                  let pk = getUrlParameter('pk');
+                  let price = getUrlParameter('price');
+
+                  $("#pk").html(`${pk} :`);
+                  $("#price").html(`$${price}`);
+                  $("#paypal-pkg-price").html(`Total Price:  $${price}`);
+                  $("#your-pkname").val(pk);
+                  $("#your-pkprice").val(price);
+
+               }
+
+               $(".dis-none").css("display","none", "transition-duration","0.5s");
+               $(".img-sec-main").css("display","block", "transition-duration","0.5s");
+               $(".create-acc-form").css("display","inline-block", "transition-duration","0.5s");
+             }
+
+
+    }).fail(function()
+    {
+    console.log("request fail");
+    	$("#insta-error").css("display", "block");
+    });
+}
+ else
+ {
+   $("#insta-error").css("display", "block");
+ }
+
+});
+
+</script>
